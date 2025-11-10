@@ -1,0 +1,23 @@
+{% extends "master.html" %}
+{% block title %}
+  My Tennis Club
+{% endblock %}
+
+{% block content %}
+    <h1>All Authors and their Books</h1>
+    <ul>
+        {% for book in books %}
+            <li>
+                <strong>{{ book.title }}</strong>
+                <strong>{{ book.author }}</strong>
+                <!-- <ul>
+                    {% for book in author.book_set.all %}
+                        <li>{{ book.title }}</li>
+                    {% empty %}
+                        <li>No books available.</li>
+                    {% endfor %}
+                </ul> -->
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
