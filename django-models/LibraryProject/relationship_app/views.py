@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login,authenticate, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib import messages
@@ -7,7 +7,10 @@ from django.http import HttpResponse
 from .query_samples import insert_sample_data, get_all_books, get_all_libraries, get_all_libranians
 from django.template import loader
 from .models import Library,Book
+from .forms import BookForm
 from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.decorators import permission_required,login_required 
 
 
 def display_all(request):
@@ -93,34 +96,66 @@ def logout_view(request):
     logout(request)
     return render(request, 'relationship_app/logout.html')
 
-# ----------------------------
+# Use Django's built-in LoginView
+class LoginView(LoginView):
+    template_name = 'relationship_app/login.html'
+    authentication_form = AuthenticationForm
+
+# Use Django's built-in LogoutView
+class LogoutView(LogoutView):
+    template_name = 'relationship_app/logout.html'
+
+
+
+# Helper function to check if the user has a specific role
+def check_role(user, role):
+    return user.is_authenticated and user.userprofile.role == role
+
 # Admin view
-# ----------------------------
-def is_admin(user):
-    return hasattr(user, 'userprofile') and user.userprofile.role == 'Admin'
+@login_required
+@user_passes_test(lambda user: user.userprofile.role == 'Admin', login_url='home')
+def admin_view(request):
+    return render(request, 'relationship_app/admin_view.html')
 
-@user_passes_test(is_admin)
-def admin_dashboard(request):
-    return render(request, 'users/admin_view.html', {'role': 'Admin'})
+# Librarian view
+@login_required
+@user_passes_test(lambda user: user.userprofile.role == 'Librarian', login_url='home')
+def librarian_view(request):
+    return render(request, 'relationship_app/librarian_view.html')
 
-# ----------------------------
-# Librarian View
-# ----------------------------
-
-def is_librarian(user):
-    return hasattr(user, 'userprofile') and user.userprofile.role == 'Librarian'
-
-@user_passes_test(is_librarian)
-def librarian_dashboard(request):
-    return render(request, 'users/librarian_view.html', {'role': 'Librarian'})
-
-# ----------------------------
 # Member view
-# ----------------------------
-def is_member(user):
-    return hasattr(user, 'userprofile') and user.userprofile.role == 'Member'
+@login_required
+@user_passes_test(lambda user: user.userprofile.role == 'Member', login_url='home')
+def member_view(request):
+    return render(request, 'relationship_app/member_view.html')
 
+@permission_required('relationship_app.can_add_book', raise_exception=True)
+def add_book(request):
+    if request.method == 'POST':
+        form = BookForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('list_books')
+    else:
+        form = BookForm()
+    return render(request, 'relationship_app/add_book.html', {'form': form})
 
-@user_passes_test(is_member)
-def member_dashboard(request):
-    return render(request, 'users/member_view.html', {'role': 'Member'})
+@permission_required('relationship_app.can_change_book', raise_exception=True)
+def edit_book(request, pk):
+    book = get_object_or_404(Book, pk=pk)
+    if request.method == 'POST':
+        form = BookForm(request.POST, instance=book)
+        if form.is_valid():
+            form.save()
+            return redirect('list_books')
+    else:
+        form = BookForm(instance=book)
+    return render(request, 'relationship_app/edit_book.html', {'form': form})
+
+@permission_required('relationship_app.can_delete_book', raise_exception=True)
+def delete_book(request, pk):
+    book = get_object_or_404(Book, pk=pk)
+    if request.method == 'POST':
+        book.delete()
+        return redirect('list_books')
+    return render(request, 'relationship_app/delete_book.html', {'book': book})
