@@ -12,5 +12,4 @@ urlpatterns = [
     path('admin_view/', admin_view.admin_dashboard, name='admin_view'),
     path('librarian_view/', librarian_view.librarian_dashboard, name='librarian_view'),
     path('member_view/', member_view.member_dashboard, name='member_view'),
-
 ]

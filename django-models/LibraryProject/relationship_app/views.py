@@ -6,7 +6,8 @@ from django.views.generic.detail import DetailView
 from django.http import HttpResponse
 from .query_samples import insert_sample_data, get_all_books, get_all_libraries, get_all_libranians
 from django.template import loader
-from .models import Library,Librarian,Author,Book
+from .models import Library,Book
+from django.contrib.auth.decorators import user_passes_test
 
 
 def display_all(request):
@@ -91,3 +92,35 @@ def logout_view(request):
     """Handle user logout."""
     logout(request)
     return render(request, 'relationship_app/logout.html')
+
+# ----------------------------
+# Admin view
+# ----------------------------
+def is_admin(user):
+    return hasattr(user, 'userprofile') and user.userprofile.role == 'Admin'
+
+@user_passes_test(is_admin)
+def admin_dashboard(request):
+    return render(request, 'users/admin_view.html', {'role': 'Admin'})
+
+# ----------------------------
+# Librarian View
+# ----------------------------
+
+def is_librarian(user):
+    return hasattr(user, 'userprofile') and user.userprofile.role == 'Librarian'
+
+@user_passes_test(is_librarian)
+def librarian_dashboard(request):
+    return render(request, 'users/librarian_view.html', {'role': 'Librarian'})
+
+# ----------------------------
+# Member view
+# ----------------------------
+def is_member(user):
+    return hasattr(user, 'userprofile') and user.userprofile.role == 'Member'
+
+
+@user_passes_test(is_member)
+def member_dashboard(request):
+    return render(request, 'users/member_view.html', {'role': 'Member'})
