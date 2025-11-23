@@ -27,6 +27,31 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Prevent browsers from guessing content types
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Enable XSS protection in browsers
+SECURE_BROWSER_XSS_FILTER = True
+
+# Prevent iframe embedding (protects against clickjacking)
+X_FRAME_OPTIONS = 'DENY'
+
+# Use HTTPS for cookies
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
+# Optional: Prevent access to cookies via JavaScript (recommended)
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = True
+
+# Enable HSTS (forces browsers to always use HTTPS)
+SECURE_HSTS_SECONDS = 31536000     # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = True
+HTTP_X_FORWARDED_PROTO = True
+
 # Trusted Origin policy for CSRF
 CSRF_TRUSTED_ORIGINS = [
     'https://127.0.0.1',
@@ -50,6 +75,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'bookshelf',
     'relationship_app',
+    'csp',
 ]
 
 MIDDLEWARE = [
@@ -60,7 +86,19 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'csp.middleware.CSPMiddleware',
 ]
+
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_STYLE_SRC = ("'self'", 'https://fonts.googleapis.com')
+CSP_FONT_SRC = ("'self'", 'https://fonts.gstatic.com')
+CSP_SCRIPT_SRC = ("'self'",)
+CSP_IMG_SRC = ("'self'", 'data:')
+
+
+ROOT_URLCONF = 'LibraryProject.urls'
+LOGIN_REDIRECT_URL = 'list_books'
+LOGOUT_REDIRECT_URL = 'login'
 
 ROOT_URLCONF = 'LibraryProject.urls'
 
