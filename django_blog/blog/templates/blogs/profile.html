@@ -1,0 +1,16 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+{% block title %}Profile{% endblock %}
+
+{% block content %} 
+    <h1>Profile</h1>
+    <p>Username: {{ user.username }}</p>
+    <p>Email: {{ user.email }}</p>
+    
+    <form method="POST">
+        {% csrf_token %}
+        {{ u_form.as_p }}
+        <button type="submit">Update</button>
+    </form>
+
+{% endblock %}
