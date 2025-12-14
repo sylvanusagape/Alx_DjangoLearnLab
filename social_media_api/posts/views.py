@@ -1,33 +1,30 @@
-from rest_framework import viewsets, permissions, filters
-from rest_framework.pagination import PageNumberPagination
+from rest_framework import viewsets, permissions
 from .models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer
 
-class StandardResultsSetPagination(PageNumberPagination):
-    page_size = 10
-    page_size_query_param = 'page_size'
-    max_page_size = 100
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    """
+    Custom permission: Only allow owners to edit/delete their objects.
+    """
+    def has_object_permission(self, request, view, obj):
+        # Read permissions allowed for any request
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        # Write permissions allowed only to the owner
+        return obj.user == request.user
 
 class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all().order_by('-created_at')
+    queryset = Post.objects.all()
     serializer_class = PostSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    pagination_class = StandardResultsSetPagination
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['title', 'content']
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
-
-    def get_queryset(self):
-        return Post.objects.all().order_by('-created_at')
+        serializer.save(user=self.request.user)
 
 class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        return Comment.objects.filter(author=self.request.user)
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        serializer.save(user=self.request.user)
