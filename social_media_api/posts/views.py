@@ -1,18 +1,9 @@
 from rest_framework import viewsets, permissions, generics
-from rest_framework.response import Response
-from django.contrib.auth import get_user_model
-
 from .models import Post, Comment
 from .serializers import PostSerializer, CommentSerializer
 
-User = get_user_model()
-
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
-    """
-    Only owners can edit or delete objects.
-    """
-
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
@@ -20,7 +11,7 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
 
 
 class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all().order_by('-created_at')
+    queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
 
@@ -42,8 +33,7 @@ class FeedView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        user = self.request.user
-        following_users = user.following.all()
+        following_users = self.request.user.following.all()
         return Post.objects.filter(
             user__in=following_users
         ).order_by('-created_at')
