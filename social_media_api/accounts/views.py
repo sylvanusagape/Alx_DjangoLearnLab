@@ -1,37 +1,41 @@
-from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
+from django.contrib.auth import get_user_model
+from rest_framework import generics, permissions
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.authtoken.models import Token
+from rest_framework import status
 
-from .serializers import RegisterSerializer, LoginSerializer, UserProfileSerializer
-
-
-class RegisterView(APIView):
-    def post(self, request):
-        serializer = RegisterSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-
-        token, _ = Token.objects.get_or_create(user=user)
-        return Response({
-            'token': token.key,
-            'user': serializer.data
-        })
+User = get_user_model()
 
 
-class LoginView(APIView):
-    def post(self, request):
-        serializer = LoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data
-        token, _ = Token.objects.get_or_create(user=user)
+class FollowUserView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = User.objects.all()
 
-        return Response({'token': token.key})
+    def post(self, request, user_id):
+        user_to_follow = get_object_or_404(User, id=user_id)
+
+        if user_to_follow == request.user:
+            return Response(
+                {"detail": "You cannot follow yourself."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        request.user.following.add(user_to_follow)
+        return Response(
+            {"detail": "User followed successfully."},
+            status=status.HTTP_200_OK
+        )
 
 
-class ProfileView(APIView):
-    permission_classes = [IsAuthenticated]
+class UnfollowUserView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = User.objects.all()
 
-    def get(self, request):
-        serializer = UserProfileSerializer(request.user)
-        return Response(serializer.data)
+    def post(self, request, user_id):
+        user_to_unfollow = get_object_or_404(User, id=user_id)
+
+        request.user.following.remove(user_to_unfollow)
+        return Response(
+            {"detail": "User unfollowed successfully."},
+            status=status.HTTP_200_OK
+        )
