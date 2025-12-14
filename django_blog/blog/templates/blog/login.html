@@ -1,3 +1,21 @@
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+{% extends 'blog/base.html' %}
+{% load static %}
+{% block title %}Login{% endblock %}
+
+{% block content %} 
+    <h1>Login</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Login</button>
+    </form>
+    <p>Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+{% endblock %}
+=======
+>>>>>>> 7d6f437
 <h2>Login</h2>
 <form method="post">
   {% csrf_token %}
@@ -8,3 +26,7 @@
   <p>{{ message }}</p>
 {% endfor %}
 <a href="{% url 'register' %}">Register</a>
+<<<<<<< HEAD
+=======
+>>>>>>> 2debf54 (Project 0: Initial Django setup with custom user model and token authentication)
+>>>>>>> 7d6f437

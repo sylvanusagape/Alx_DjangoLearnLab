@@ -1,0 +1,43 @@
+    {% extends 'blog/base.html' %} 
+    {% load static %} 
+    
+    {% block title %}HOME{% endblock %}
+    
+    {% block content %}
+    <h1>HOME</h1>
+    {% if user.is_authenticated %}
+    <p>Welcome, {{ user.username }}!</p>
+    <form action="{% url 'logout' %}" method="post" style="display: inline">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+
+    <a href="{% url 'profile' %}">Create a New Post</a>
+    {% else %}
+    <p>
+        <a href="{% url 'login' %}">Login</a> or
+        <a href="{% url 'register' %}">Register</a>
+    </p>
+
+    {% endif %}
+    <ul>
+    {% for post in posts %}
+    <li>
+        <h2>{{ post.title }}</h2>
+        <p><strong>Author </strong> : {{ post.author }}</p>
+        <p>{{ post.content|slice:":200" }}...</p>
+        <p>{{ post.created_at }}</p>
+        {% if user.is_authenticated and user == post.author %}
+    
+    <p>
+        <a href="{% url 'edit_post' post.pk %}">Edit</a> |
+        <a href="{% url 'delete_post' post.pk %}">Delete</a>
+    </p>
+    {% endif %}
+    
+    </li>
+        {% empty %}
+        <li>No posts available.</li>
+        {% endfor %}
+    </ul>
+    {% endblock %}
