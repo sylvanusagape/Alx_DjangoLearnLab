@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 """
 URL configuration for social_media_api project.
 
