@@ -1,13 +1,8 @@
 from rest_framework import serializers
-<<<<<<< HEAD
-from django.contrib.auth import authenticate
-from .models import User
-=======
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework.authtoken.models import Token
 
 User = get_user_model()
->>>>>>> 7d6f437
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -24,10 +19,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             password=validated_data['password'],
             bio=validated_data.get('bio', '')
         )
-<<<<<<< HEAD
-=======
         Token.objects.create(user=user)
->>>>>>> 7d6f437
         return user
 
 
@@ -43,25 +35,8 @@ class LoginSerializer(serializers.Serializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-<<<<<<< HEAD
-    followers_count = serializers.IntegerField(
-        source='followers.count',
-        read_only=True
-    )
-
-    class Meta:
-        model = User
-        fields = [
-            'id',
-            'username',
-            'bio',
-            'profile_picture',
-            'followers_count'
-        ]
-=======
     followers_count = serializers.IntegerField(source='followers.count', read_only=True)
 
     class Meta:
         model = User
         fields = ['id', 'username', 'bio', 'profile_picture', 'followers_count']
->>>>>>> 7d6f437
