@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework.authtoken.models import Token
 
-User = get_user_model()  # instead of using .models.User directly
+User = get_user_model()
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -13,14 +13,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'password', 'bio']
 
     def create(self, validated_data):
-        # create user
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data.get('email'),
             password=validated_data['password'],
             bio=validated_data.get('bio', '')
         )
-        # create auth token immediately
         Token.objects.create(user=user)
         return user
 
